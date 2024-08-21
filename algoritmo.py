@@ -1,18 +1,28 @@
-from typing import Callable
+from typing import Callable, List
 from math import log10, fabs
+import matplotlib.pyplot as plt
 
 
 class Algorithm:
     def __init__(
-        self, expr: Callable, precision: float, log: bool, max_iters: int | None
+        self,
+        expr: Callable,
+        precision: float,
+        plot: str | None,
+        log: bool,
+        max_iters: int | None,
     ):
         self.expr = expr
         self.precision = precision
+        self.plot = plot
         self.log = log
         self.n = 0
-        self.estimate = None
+        self.estimate = 0
         self.error = 0
         self.max_iters = 200 if max_iters is None else max_iters
+        if self.plot:
+            self.estimates: List[float] = []
+            self.errors: List[float] = []
 
     def stop(self) -> bool:
         """Critério de parada do algoritmo"""
@@ -22,6 +32,9 @@ class Algorithm:
         """Roda uma única iteração do algoritmo"""
         self.n += 1
         self.error = self.next()
+        if self.plot:
+            self.estimates.append(self.estimate)
+            self.errors.append(self.error)
         return self.stop()
 
     def next(self) -> float:
@@ -40,10 +53,28 @@ class Algorithm:
             )
 
         elif self.log:
-
             print(
                 f"Stopped iterating at {self.n} iterations, with error {self.error} and final estimate = {self.estimate}"
             )
+
+        if self.plot == "error":
+            plt.plot(self.errors, label="Error")
+            plt.legend()
+            plt.show()
+
+        elif self.plot == "estimate":
+            plt.plot(self.estimates, label="Estimate")
+            plt.legend()
+            plt.show()
+
+        elif self.plot == "all":
+            plt.plot(self.estimates, label="Estimate")
+            plt.plot(self.errors, label="Error")
+            plt.legend()
+            plt.show()
+
+        elif self.plot is not None:
+            print(f"Unknown plot option: {self.plot}")
 
 
 class Bissection(Algorithm):
@@ -51,12 +82,13 @@ class Bissection(Algorithm):
         self,
         expr: Callable,
         precision: float,
+        plot: str | None,
         log: bool,
         max_iters: int | None,
         a: float,
         b: float,
     ):
-        super().__init__(expr, precision, log, max_iters)
+        super().__init__(expr, precision, plot, log, max_iters)
         self.a = a
         self.b = b
 
@@ -79,6 +111,6 @@ def expr(x):
 
 
 if __name__ == "__main__":
-    bissection = Bissection(expr, 10**-4, True, 100, 2, 3)
+    bissection = Bissection(expr, 10**-4, "all", False, 100, 2, 3)
 
     bissection.run()
