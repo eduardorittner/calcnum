@@ -26,7 +26,7 @@ class Algorithm:
 
     def stop(self) -> bool:
         """Critério de parada do algoritmo"""
-        return False
+        return self.error < self.precision
 
     def iterate_once(self) -> bool:
         """Roda uma única iteração do algoritmo"""
@@ -35,7 +35,7 @@ class Algorithm:
         if self.plot:
             self.estimates.append(self.estimate)
             self.errors.append(self.error)
-        return self.stop()
+        return not self.stop()
 
     def next(self) -> float:
         assert False, "next method must be implemented by child classes"
@@ -54,7 +54,7 @@ class Algorithm:
 
         elif self.log:
             print(
-                f"Stopped iterating at {self.n} iterations, with error {self.error} and final estimate = {self.estimate}"
+                f"Stopped iterating at {self.n-1} iterations, with error {self.error} and final estimate = {self.estimate}"
             )
 
         if self.plot == "error":
@@ -92,9 +92,6 @@ class Bissection(Algorithm):
         self.a = a
         self.b = b
 
-    def stop(self) -> bool:
-        return self.error > self.precision
-
     def next(self) -> float:
         self.estimate = (self.a + self.b) / 2
 
@@ -106,11 +103,39 @@ class Bissection(Algorithm):
         return fabs(self.a - self.b)
 
 
+class FalsePosition(Algorithm):
+    def __init__(
+        self,
+        expr: Callable,
+        precision: float,
+        plot: str | None,
+        log: bool,
+        max_iters: int | None,
+        a: float,
+        b: float,
+    ):
+        super().__init__(expr, precision, plot, log, max_iters)
+        self.a = a
+        self.b = b
+
+    def next(self) -> float:
+        self.estimate = (
+            (self.a * self.expr(self.b)) - (self.b * self.expr(self.a))
+        ) / (self.expr(self.b) - self.expr(self.a))
+
+        if self.expr(self.estimate) * self.expr(self.a) < 0:
+            self.a = self.estimate
+        else:
+            self.b = self.estimate
+
+        return fabs(self.a - self.b)
+
+
 def expr(x):
     return x * log10(x) - 1
 
 
 if __name__ == "__main__":
-    bissection = Bissection(expr, 10**-4, "all", False, 100, 2, 3)
+    bissection = FalsePosition(expr, 10**-4, "all", True, 100, 2, 3)
 
     bissection.run()
