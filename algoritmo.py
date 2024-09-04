@@ -52,7 +52,7 @@ class Algorithm:
                 f"Stopped iterating at max iterations ({self.max_iters}), is your algorithm correct?"
             )
 
-        elif self.log:
+        else:
             print(
                 f"Stopped iterating at {self.n-1} iterations, with error {self.error} and final estimate = {self.estimate}"
             )
