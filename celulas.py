@@ -1,9 +1,15 @@
 from typing import Callable
 from math import e
+import pandas as pd
+import matplotlib.pyplot as plt
 
 
 def fn(n: float) -> float:
     return (0.2 * n) - (4 * (10**-3) * (n**2))
+
+
+def true(t: float) -> float:
+    return 50 * ((e ** (0.2 * t))) / (49 + e ** (0.2 * t))
 
 
 class ExplicitEuler:
@@ -22,7 +28,7 @@ class ExplicitEuler:
 
         while i < self.iters:
             t, n = self.next()
-            print(f"({t}, {n}, {self.true(t)})")
+            yield n
             i += 1
 
     def next(self) -> tuple[float, float]:
@@ -39,7 +45,7 @@ class ImplicitEuler:
         self.f = f
         self.h = h
         self.iters = iters
-        self.t: float = 0
+        self.t: float = 1
         self.n = 1
 
     def true(self, t: float):
@@ -50,7 +56,7 @@ class ImplicitEuler:
 
         while i < self.iters:
             t, n = self.next()
-            print(f"({t}, {n}, {self.true(t)})")
+            yield n
             i += 1
 
     def next(self) -> tuple[float, float]:
@@ -91,7 +97,7 @@ class CrankNikolson:
 
         while i < self.iters:
             t, n = self.next()
-            print(f"({t}, {n}, {self.true(t)})")
+            yield n
             i += 1
 
     def next(self):
@@ -103,7 +109,72 @@ class CrankNikolson:
         return self.t, self.n
 
 
-# Só mudar a classe aqui
-algo = ImplicitEuler(fn, 0.5, 48)
+stop = 4
+step = 0.05
+stop = int(stop / step)
 
-algo.run()
+imp = ImplicitEuler(fn, step, stop)
+imp = list(imp.run())
+exp = ExplicitEuler(fn, step, stop)
+exp = list(exp.run())
+crank = CrankNikolson(fn, step, stop)
+crank = list(crank.run())
+
+time = [(i * step) + step for i in range(0, stop, 1)]
+true_values = [true(t) for t in time]
+
+
+def table(time, ref, exp, imp, crank):
+    data = {
+        "Tempo": time,
+        "Real": true_values,
+        "Euler Explícito": exp,
+        "Euler Implícito": imp,
+        "Crank-Nikolson": crank,
+    }
+
+    df = pd.DataFrame(data)
+
+    formatted_df = df.style.format("{:.10f}")  # Format numbers to 2 decimal places
+
+    styled_df = (
+        formatted_df.format("{:.0f}", subset=["Tempo"])
+        .hide()
+        .set_table_styles(
+            [
+                {
+                    "selector": "th.col_heading",
+                    "props": "padding-right: 30px; padding-left: 30px;",
+                },
+                {
+                    "selector": "th",
+                    "props": "text-align: center; border-bottom: 3px solid white; border-left: 3px solid white; border-right: 3px solid white;",
+                },
+                {
+                    "selector": "td",
+                    "props": "text-align: center; border-bottom:3px solid white; border-left: 3px solid white; border-right: 3px solid white;",
+                },
+            ]
+        )
+    )
+    return styled_df.to_html()
+
+
+def plot(df):
+    plot = df.plot(
+        "Tempo", ["Real", "Euler Explícito", "Euler Implícito", "Crank-Nikolson"]
+    )
+    plt.show()
+
+
+def convergence(stop, steps):
+    for step in steps:
+        imp = ImplicitEuler(fn, step, stop)
+        imp = list(imp.run())
+        exp = ExplicitEuler(fn, step, stop)
+        exp = list(exp.run())
+        crank = CrankNikolson(fn, step, stop)
+        crank = list(crank.run())
+
+        time = [(i * step) + step for i in range(0, stop, 1)]
+        true_values = [true(t) for t in time]
