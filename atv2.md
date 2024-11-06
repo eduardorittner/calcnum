@@ -6,7 +6,7 @@ São dados:
 
 Precisamos:
 
-- [X] Desenhar a área do reservatório e trajetória do robô
+- [ ] Desenhar a área do reservatório e trajetória do robô
 - [ ] Determinar o ponto onde eles se encontram analiticamente
 - [ ] Analisar se o problema é bem posto
 - [ ] Analisar a convergência do método de Newton
@@ -21,11 +21,11 @@ Precisamos:
 
 Precisamos:
 
-- [ ] Resolver o problema com método exp. de 1 ordem (euler progressivo)
+- [X] Resolver o problema com método exp. de 1 ordem (euler progressivo)
 - [ ] Analisar estabilidade e conv.
 
-- [ ] Resolver o problema com método imp. de 1 ordem (euler regressivo)
+- [X] Resolver o problema com método imp. de 1 ordem (euler regressivo)
 - [ ] Analisar estabilidade e conv.
 
-- [ ] Resolver o problema com método de 2 ordem (crank-nikolson)
+- [X] Resolver o problema com método de 2 ordem (crank-nikolson)
 - [ ] Analisar estabilidade e conv.
